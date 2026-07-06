@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.db
+static/models/*.pkl
+static/visualizations/*.png
+uploads/
+.idea/
+.vscode/

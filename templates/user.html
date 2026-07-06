@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard - Crop Prediction Platform{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-bottom: 1rem;">Crop Area <span>Occupation Predictor</span></h1>
+    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2.5rem;">
+        Enter the details below. The system will pre-process your inputs, feed them into our best-performing pre-trained ML model, and predict the occupied land area.
+    </p>
+
+    <div class="glass-panel">
+        <form action="/predict" method="POST" class="show-spinner-on-submit">
+            <h2 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--outline); padding-bottom: 0.5rem; font-size: 1.3rem; color: var(--primary);">
+                Input Parameters
+            </h2>
+
+            {% if metadata %}
+                <div class="grid-2">
+                    {% for feature in metadata.feature_cols %}
+                        <div class="form-group">
+                            <label for="field-{{ feature }}">{{ feature | replace('_', ' ') }}</label>
+                            
+                            {% if metadata.feature_choices[feature] %}
+                                <!-- Categorical Select Dropdown -->
+                                <select id="field-{{ feature }}" name="{{ feature }}" class="form-control" required>
+                                    <option value="" disabled selected>Select {{ feature | replace('_', ' ') }}</option>
+                                    {% for choice in metadata.feature_choices[feature] %}
+                                        <option value="{{ choice }}">{{ choice }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <!-- Numerical Input -->
+                                <input type="number" step="any" id="field-{{ feature }}" name="{{ feature }}" class="form-control" placeholder="Enter numeric value" required>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert">
+                    ⚠️ Error: No trained model metadata was detected. Please log in as Admin and train the model using a dataset first.
+                </div>
+            {% endif %}
+
+            <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <a href="/history" class="btn btn-secondary">
+                    🕒 Check Previous Results
+                </a>
+                <button type="submit" class="btn btn-primary" {% if not metadata %}disabled{% endif %}>
+                    ⚡ Submit Details
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

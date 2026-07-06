@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Crop Prediction Platform{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="hero-title">Optimize Your <span>Crop Area</span> Cultivation</h1>
+    <p class="hero-subtitle">Harness machine learning to predict crop area occupation and optimize resource deployment.</p>
+</div>
+
+<div class="auth-container">
+    <div class="glass-panel">
+        <div class="auth-tabs">
+            <div id="tab-user-signin" class="auth-tab active" onclick="switchTab('user-signin')">User Signin</div>
+            <div id="tab-user-signup" class="auth-tab" onclick="switchTab('user-signup')">User Signup</div>
+            <div id="tab-admin-signin" class="auth-tab" onclick="switchTab('admin-signin')">Admin Signin</div>
+        </div>
+
+        <!-- User Signin Form -->
+        <div id="form-user-signin" class="auth-form">
+            <form action="/login/user" method="POST" class="show-spinner-on-submit">
+                <h2>User Access</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Sign in to execute predictions and view history.</p>
+                
+                <div class="form-group">
+                    <label for="signin-username">User Name</label>
+                    <input type="text" id="signin-username" name="username" class="form-control" placeholder="e.g. farmer_john" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signin-email">Mail ID</label>
+                    <input type="email" id="signin-email" name="email" class="form-control" placeholder="e.g. john@gmail.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signin-password">Password</label>
+                    <input type="password" id="signin-password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Sign In</button>
+                
+                <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+                    Don't have an account? <a href="#" id="link-to-signup" onclick="switchTab('user-signup'); return false;" style="color: var(--primary); text-decoration: underline;">Signup User</a>
+                </p>
+            </form>
+        </div>
+
+        <!-- User Signup Form -->
+        <div id="form-user-signup" class="auth-form" style="display: none;">
+            <form id="user-signup-form" action="/signup" method="POST">
+                <h2>Create Account</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Register to save results and recommendations.</p>
+                
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" name="name" class="form-control" placeholder="John Doe" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-username">User Name</label>
+                    <input type="text" id="signup-username" name="username" class="form-control" placeholder="farmer_john" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-email">Mail ID (@gmail.com)</label>
+                    <input type="email" id="signup-email" name="email" class="form-control" placeholder="john@gmail.com" required>
+                    <small class="form-help">Must end with @gmail.com</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-phone">Phone Number (+91 XXXXXXXXXX)</label>
+                    <input type="text" id="signup-phone" name="phone" class="form-control" placeholder="+919876543210" required>
+                    <small class="form-help">Must start with +91 followed by 10 digits</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" name="password" class="form-control" placeholder="Amma@1234" required>
+                    <small class="form-help">Minimum 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-confirm-password">Confirm Password</label>
+                    <input type="password" id="signup-confirm-password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-purple" style="width: 100%; margin-top: 1rem;">Submit Details</button>
+                
+                <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+                    Already have an account? <a href="#" id="link-to-signin" onclick="switchTab('user-signin'); return false;" style="color: var(--primary); text-decoration: underline;">Sign In</a>
+                </p>
+            </form>
+        </div>
+
+        <!-- Admin Signin Form -->
+        <div id="form-admin-signin" class="auth-form" style="display: none;">
+            <form action="/login/admin" method="POST" class="show-spinner-on-submit">
+                <h2>Admin Console</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Authorized personnel login for dataset training.</p>
+                
+                <div class="form-group">
+                    <label for="admin-username">Admin User Name</label>
+                    <input type="text" id="admin-username" name="username" class="form-control" placeholder="admin" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="admin-password">Admin Password</label>
+                    <input type="password" id="admin-password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Submit Admin Login</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        // Toggle tab highlights
+        document.querySelectorAll(".auth-tab").forEach(tab => tab.classList.remove("active"));
+        document.getElementById("tab-" + tabId).classList.add("active");
+        
+        // Show/hide forms
+        document.querySelectorAll(".auth-form").forEach(form => form.style.display = "none");
+        document.getElementById("form-" + tabId).style.display = "block";
+    }
+
+    // Check query params if we want to default to a specific tab
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam === 'signup') {
+        switchTab('user-signup');
+    } else if (tabParam === 'admin') {
+        switchTab('admin-signin');
+    }
+</script>
+{% endblock %}

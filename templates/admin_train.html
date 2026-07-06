@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Train ML Model - Admin Console{% endblock %}
+
+{% block content %}
+<div class="glass-panel glowing-purple">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--outline); padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+        <h1 style="border: none; margin: 0; padding: 0;">Model <span>Training Station</span></h1>
+        <div>
+            <a href="/admin" class="btn btn-secondary">🔙 Admin Dashboard</a>
+        </div>
+    </div>
+
+    <!-- STEP 1: Upload Dataset -->
+    <section style="margin-bottom: 2.5rem; border-bottom: 1px solid var(--outline); padding-bottom: 2rem;">
+        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Step 1: Upload Dataset</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+            Upload your Excel (.xlsx, .xls), CSV (.csv), or Text (.txt) file. This dataset will be cleaned (duplicates removed, nulls filled) automatically.
+        </p>
+
+        <form action="/admin/upload" method="POST" enctype="multipart/form-data" class="show-spinner-on-submit">
+            <div class="file-upload-wrapper {% if filename %}has-file{% endif %}" id="file-upload-wrapper">
+                <span class="upload-icon">📁</span>
+                <h4 id="selected-file-name">
+                    {% if filename %}
+                        Selected File: {{ filename }}
+                    {% else %}
+                        Drag & Drop or Click to Select File
+                    {% endif %}
+                </h4>
+                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.25rem;">
+                    CSV, Excel, or Text files supported
+                </p>
+                <input type="file" id="dataset-file" name="file" accept=".csv, .xlsx, .xls, .txt" required>
+            </div>
+            
+            <div style="margin-top: 1rem; text-align: right;">
+                <button type="submit" class="btn btn-purple">Upload File</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- STEP 2: Configure Columns and Train -->
+    {% if columns %}
+        <section style="margin-bottom: 2.5rem; border-bottom: 1px solid var(--outline); padding-bottom: 2rem;">
+            <h3 style="color: var(--secondary); margin-bottom: 1rem;">Step 2: Configure & Train Model</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Specify which columns represent the input features (X) and which column is the target crop output label (Y).
+            </p>
+
+            <form action="/admin/train_model" method="POST" class="show-spinner-on-submit">
+                <div class="grid-2">
+                    <!-- Feature selection (X) -->
+                    <div class="form-group">
+                        <label>Select Feature Columns (Input X)</label>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                            Check the columns you want the model to learn from.
+                        </p>
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--outline); border-radius: var(--radius-sm); padding: 0.75rem; background: rgba(16, 20, 21, 0.4);">
+                            {% for col in columns %}
+                                <div style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="chk-{{ col }}" name="feature_cols" value="{{ col }}" 
+                                           {% if col != 'Area' and col != 'Production' %}checked{% endif %}>
+                                    <label for="chk-{{ col }}" style="margin: 0; font-family: var(--font-mono); font-size: 0.85rem; cursor: pointer; text-transform: none;">
+                                        {{ col }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Target Selection (Y) and Scaling -->
+                    <div>
+                        <div class="form-group">
+                            <label for="target-col-select">Select Target Column (Output Y)</label>
+                            <select id="target-col-select" name="target_col" class="form-control" required>
+                                {% for col in columns %}
+                                    <option value="{{ col }}" {% if col == 'Area' %}selected{% endif %}>{{ col }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-help">This is what the model will predict (e.g. crop occupied Area).</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="scaler-select">Feature Extraction Scaler</label>
+                            <select id="scaler-select" name="scaler_type" class="form-control" required>
+                                <option value="standard" selected>Standard Scaler (Standardization)</option>
+                                <option value="minmax">MinMax Scaler (Normalization)</option>
+                            </select>
+                            <small class="form-help">Applies to original numerical inputs.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; text-align: right;">
+                    <button type="submit" class="btn btn-primary">⚡ Train 3 Algorithms</button>
+                </div>
+            </form>
+        </section>
+    {% endif %}
+
+    <!-- STEP 3: Training Results & Visualizations -->
+    {% if train_results %}
+        <section>
+            <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Step 3: Training Performance & Analytics</h3>
+            
+            <div class="alert alert-success" style="margin-bottom: 2rem;">
+                🎉 Model training completed successfully! Converted best model into a pre-trained model file: <code>static/models/best_model.pkl</code>.
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 2.5rem;">
+                <div>
+                    <h4 style="color: #fff; margin-bottom: 1rem; border-bottom: 1px solid var(--outline); padding-bottom: 0.3rem;">
+                        Algorithm Evaluation Results
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        {% for model_name, metrics in train_results.items() %}
+                            <div style="background: rgba(16, 20, 21, 0.4); border: 1px solid var(--outline); border-radius: var(--radius-md); padding: 1rem; 
+                                        {% if model_name == best_model_name %}border-color: var(--primary); box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);{% endif %}">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong style="font-family: var(--font-mono); font-size: 0.95rem;">
+                                        {{ model_name }}
+                                        {% if model_name == best_model_name %}
+                                            <span style="color: var(--primary); font-size: 0.75rem; border: 1px solid var(--primary); padding: 0.1rem 0.4rem; border-radius: 10px; margin-left: 0.5rem;">WINNER</span>
+                                        {% endif %}
+                                    </strong>
+                                    <span style="font-family: var(--font-mono); font-weight: bold; color: var(--primary); font-size: 1.1rem;">
+                                        {{ metrics.metric_name }}: {{ "%.4f"|format(metrics.score) }}
+                                    </span>
+                                </div>
+                                {% if metrics.mae is not none %}
+                                    <div style="margin-top: 0.5rem; display: flex; gap: 1.5rem; font-size: 0.8rem; color: var(--text-secondary); font-family: var(--font-mono);">
+                                        <span>MAE: {{ "%.2f"|format(metrics.mae) }}</span>
+                                        <span>MSE: {{ "%.2f"|format(metrics.mse) }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="color: #fff; margin-bottom: 1rem; border-bottom: 1px solid var(--outline); padding-bottom: 0.3rem;">
+                        Model Specification
+                    </h4>
+                    <table style="margin-top: 0;">
+                        <tr>
+                            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.85rem;">Winner Algorithm</td>
+                            <td style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: bold;">{{ best_model_name }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.85rem;">Scaler Selected</td>
+                            <td style="font-family: var(--font-mono); font-size: 0.85rem; text-transform: capitalize;">{{ scaler_type }} Scaler</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.85rem;">Input Features X</td>
+                            <td style="font-size: 0.8rem; font-family: var(--font-mono);">
+                                {% for col in feature_cols %}
+                                    <span style="display: inline-block; background: rgba(255,255,255,0.05); padding: 0.1rem 0.4rem; border-radius: 4px; margin-bottom: 0.2rem; margin-right: 0.2rem;">{{ col }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.85rem;">Target Column Y</td>
+                            <td style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--primary);">{{ target_col }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Plots section -->
+            <h4 style="color: #fff; margin-bottom: 1rem; border-bottom: 1px solid var(--outline); padding-bottom: 0.3rem;">
+                Visual Analytics (6 Data Visualizations)
+            </h4>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;">
+                These graphs are automatically generated from your cleaned dataset to uncover trends, distributions, and feature relationships.
+            </p>
+
+            <div class="vis-grid">
+                <div class="vis-card">
+                    <h5>1. Target Distribution</h5>
+                    <img src="/static/visualizations/plot_target_dist.png?t={{ timestamp }}" alt="Target Distribution">
+                </div>
+                <div class="vis-card">
+                    <h5>2. Correlation Heatmap</h5>
+                    <img src="/static/visualizations/plot_correlation.png?t={{ timestamp }}" alt="Correlation Heatmap">
+                </div>
+                <div class="vis-card">
+                    <h5>3. Average Target by Season</h5>
+                    <img src="/static/visualizations/plot_by_season.png?t={{ timestamp }}" alt="Target by Season">
+                </div>
+                <div class="vis-card">
+                    <h5>4. Average Target by Region (State)</h5>
+                    <img src="/static/visualizations/plot_by_state.png?t={{ timestamp }}" alt="Target by State">
+                </div>
+                <div class="vis-card">
+                    <h5>5. Temporal Growth (Yearly)</h5>
+                    <img src="/static/visualizations/plot_over_time.png?t={{ timestamp }}" alt="Target over Years">
+                </div>
+                <div class="vis-card">
+                    <h5>6. Distribution by Category (Boxplot)</h5>
+                    <img src="/static/visualizations/plot_distribution_boxplot.png?t={{ timestamp }}" alt="Boxplot Distribution">
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    <div style="margin-top: 3rem; border-top: 1px solid var(--outline); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <a href="/logout" class="btn btn-danger">Logout</a>
+        <a href="/admin" class="btn btn-secondary">Return to Admin Page</a>
+    </div>
+</div>
+{% endblock %}

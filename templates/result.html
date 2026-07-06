@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction Result - Crop Prediction Platform{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-bottom: 1rem;">Prediction <span>Result Analysis</span></h1>
+    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2.5rem;">
+        Here is the model prediction output along with customized optimization suggestions based on the provided inputs.
+    </p>
+
+    <div class="glass-panel">
+        <div class="result-display">
+            <h3 style="text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.9rem; color: var(--text-secondary);">
+                Predicted Occupied Area
+            </h3>
+            <div class="result-val">{{ "%.2f"|format(prediction) }} Ha</div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Metric derived using the best ML model: <strong>{{ metadata.best_model_name }}</strong>
+            </p>
+        </div>
+
+        <div class="suggestions-box">
+            <h3 style="margin-bottom: 1rem; color: #fff; font-size: 1.1rem; border-bottom: 1px solid var(--outline); padding-bottom: 0.5rem;">
+                🌱 Agronomical Recommendations & Suggestions
+            </h3>
+            
+            {% if suggestions %}
+                {% for suggestion in suggestions.split('|') %}
+                    <div class="suggestion-item">
+                        {{ suggestion.strip() }}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="suggestion-item" style="border-left-color: var(--primary);">
+                    Maintain normal cropping routines. Implement general crop health checks and soil nutrient balancing.
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Input Parameters Used -->
+        <div style="margin-top: 2rem; background: rgba(16, 20, 21, 0.3); border: 1px solid var(--outline); border-radius: var(--radius-md); padding: 1.5rem;">
+            <h4 style="margin-bottom: 1rem; font-size: 0.9rem; text-transform: uppercase; color: var(--text-secondary);">
+                Input Variables Evaluated:
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                {% for key, val in inputs.items() %}
+                    <div>
+                        <strong style="color: var(--primary); font-family: var(--font-mono); font-size: 0.85rem;">{{ key }}:</strong> 
+                        <span style="font-family: var(--font-mono); font-size: 0.85rem;">{{ val }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div style="margin-top: 2.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <a href="/predict" class="btn btn-secondary">
+                🔄 Run Another Prediction
+            </a>
+            <a href="/history" class="btn btn-primary">
+                📋 Check Previous Results
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

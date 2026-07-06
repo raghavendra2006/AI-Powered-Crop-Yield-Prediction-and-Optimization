@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction History - Crop Prediction Platform{% endblock %}
+
+{% block content %}
+<div class="glass-panel" style="margin-top: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--outline); padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+        <h1 style="border: none; margin: 0; padding: 0;">Your <span>Prediction History</span></h1>
+        <div>
+            <a href="/predict" class="btn btn-primary">⚡ Go to Predict Page</a>
+        </div>
+    </div>
+
+    {% if predictions %}
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+            A list of all your historical prediction requests and suggestions.
+        </p>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Input Details</th>
+                        <th>Predicted Area (Ha)</th>
+                        <th>Suggestions Snapshot</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in predictions %}
+                        <tr>
+                            <td style="font-family: var(--font-mono); font-size: 0.85rem; white-space: nowrap;">
+                                {{ row.timestamp }}
+                            </td>
+                            <td>
+                                <div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.2rem;">
+                                    {% for key, val in row.inputs.items() %}
+                                        <span><strong style="color: var(--primary);">{{ key }}:</strong> {{ val }}</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td style="font-family: var(--font-mono); font-weight: bold; color: var(--primary); font-size: 1.05rem;">
+                                {{ "%.2f"|format(row.prediction) }}
+                            </td>
+                            <td style="font-size: 0.85rem; max-width: 350px;">
+                                <div style="max-height: 100px; overflow-y: auto;">
+                                    {% for item in row.suggestions.split('|') %}
+                                        <div style="margin-bottom: 0.3rem; border-left: 2px solid var(--secondary); padding-left: 0.5rem;">
+                                            {{ item.strip() }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem 1rem;">
+            <div style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem;">🕒</div>
+            <h3>No Previous Predictions Found</h3>
+            <p style="color: var(--text-secondary); margin-top: 0.5rem; margin-bottom: 1.5rem;">
+                You haven't run any prediction queries yet. Go back to the input form to run your first check.
+            </p>
+            <a href="/predict" class="btn btn-primary">⚡ Run Prediction Now</a>
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+        <a href="/logout" class="btn btn-danger">Logout</a>
+    </div>
+</div>
+{% endblock %}

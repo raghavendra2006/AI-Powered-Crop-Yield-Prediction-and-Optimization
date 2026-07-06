@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Crop Prediction & Optimization{% endblock %}</title>
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Global Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Processing Request...</div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <span>⚡</span> CropPrediction
+            </a>
+            <nav>
+                {% if session.get('username') %}
+                    {% if session.get('is_admin') %}
+                        <!-- Admin Navigation -->
+                        <a href="/admin">Admin Hub</a>
+                        <a href="/admin/train">Train ML Model</a>
+                        <a href="/admin/users">Signed-up Users</a>
+                        <a href="/admin/results">System Predictions</a>
+                        <span class="nav-user-badge">🛡️ Admin</span>
+                        <a href="/logout" class="btn btn-danger" style="padding: 0.4rem 1rem;">Logout</a>
+                    {% else %}
+                        <!-- Regular User Navigation -->
+                        <a href="/predict">Predict Area</a>
+                        <a href="/history">History Records</a>
+                        <span class="nav-user-badge">👤 {{ session.get('username') }}</span>
+                        <a href="/logout" class="btn btn-danger" style="padding: 0.4rem 1rem;">Logout</a>
+                    {% endif %}
+                {% else %}
+                    <!-- Guest Navigation -->
+                    <a href="/">Home</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {% if category == 'success' %}alert-success{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 CropPrediction & Optimization Platform. Powered by Stitch Design System.</p>
+    </footer>
+
+    <!-- Frontend JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

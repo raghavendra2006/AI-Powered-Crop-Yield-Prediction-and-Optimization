@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Hub - Crop Prediction Platform{% endblock %}
+
+{% block content %}
+<div class="glass-panel">
+    <div style="border-bottom: 1px solid var(--outline); padding-bottom: 1rem; margin-bottom: 2rem;">
+        <h1>Admin <span>Dashboard</span> Hub</h1>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+            Authorized management tools for dataset uploads, retraining algorithms, and system audit logs.
+        </p>
+    </div>
+
+    <!-- Metrics Summary -->
+    <div class="admin-metrics">
+        <div class="metric-card">
+            <div class="val">{{ user_count }}</div>
+            <div class="lbl">Registered Users</div>
+        </div>
+        <div class="metric-card">
+            <div class="val">{{ prediction_count }}</div>
+            <div class="lbl">Predictions Saved</div>
+        </div>
+        <div class="metric-card">
+            <div class="val" style="color: var(--secondary);">
+                {% if best_model_name %}
+                    ★ Yes
+                {% else %}
+                    ❌ None
+                {% endif %}
+            </div>
+            <div class="lbl">Active Model: {% if best_model_name %}{{ best_model_name }}{% else %}None{% endif %}</div>
+        </div>
+    </div>
+
+    <!-- Admin Operations Grid -->
+    <div class="grid-3" style="margin-top: 2rem;">
+        <!-- Card 1: Train -->
+        <a href="/admin/train" class="landing-card" style="text-decoration: none; color: inherit;">
+            <div class="icon">📈</div>
+            <h3>Upload & Train Data</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
+                Upload a dataset (CSV/Excel), choose variables, preprocess, and train 3 models.
+            </p>
+        </a>
+
+        <!-- Card 2: See Users -->
+        <a href="/admin/users" class="landing-card" style="text-decoration: none; color: inherit;">
+            <div class="icon">👥</div>
+            <h3>See Users Details</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
+                Inspect details of users who signed up (Name, Username, Email, Phone).
+            </p>
+        </a>
+
+        <!-- Card 3: See History -->
+        <a href="/admin/results" class="landing-card" style="text-decoration: none; color: inherit;">
+            <div class="icon">📋</div>
+            <h3>See Previous Results</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
+                Browse and audit all crop predictions executed across the platform.
+            </p>
+        </a>
+    </div>
+
+    <div style="margin-top: 3rem; border-top: 1px solid var(--outline); padding-top: 1.5rem; display: flex; justify-content: flex-end;">
+        <a href="/logout" class="btn btn-danger">Logout</a>
+    </div>
+</div>
+{% endblock %}

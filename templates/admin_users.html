@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}User Registry - Admin Console{% endblock %}
+
+{% block content %}
+<div class="glass-panel glowing-purple">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--outline); padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+        <h1 style="border: none; margin: 0; padding: 0;">Registered <span>User Details</span></h1>
+        <div>
+            <a href="/admin" class="btn btn-secondary">🔙 Admin Dashboard</a>
+        </div>
+    </div>
+
+    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+        A list of all users registered on the platform. All user passwords are securely hashed.
+    </p>
+
+    {% if users %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>User Name</th>
+                        <th>Mail ID</th>
+                        <th>Phone Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary);">
+                                {{ loop.index }}
+                            </td>
+                            <td style="font-weight: bold; color: #fff;">
+                                {{ user.name }}
+                            </td>
+                            <td style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--primary);">
+                                @{{ user.username }}
+                            </td>
+                            <td style="font-family: var(--font-mono); font-size: 0.85rem;">
+                                {{ user.email }}
+                            </td>
+                            <td style="font-family: var(--font-mono); font-size: 0.85rem;">
+                                {{ user.phone }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem 1rem;">
+            <div style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem;">👥</div>
+            <h3>No Users Registered</h3>
+            <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+                No user accounts have been created yet.
+            </p>
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 3rem; border-top: 1px solid var(--outline); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <a href="/logout" class="btn btn-danger">Logout</a>
+        <a href="/admin" class="btn btn-secondary">Return to Admin Page</a>
+    </div>
+</div>
+{% endblock %}
