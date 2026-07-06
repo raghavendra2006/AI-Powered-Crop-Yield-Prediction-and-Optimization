@@ -1,24 +1,114 @@
 {% extends "base.html" %}
 
-{% block title %}User Dashboard - Crop Prediction Platform{% endblock %}
+{% block title %}Prediction Dashboard - Crop Prediction Platform{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+    .district-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--outline);
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+        padding: 0.4rem;
+        font-size: 0.75rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-family: var(--font-mono);
+    }
+    .district-btn:hover {
+        background: var(--primary-glow);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    .district-btn.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #0b0f10;
+        box-shadow: 0 0 10px var(--primary-glow);
+    }
+    /* Custom Leaflet style overrides for dark glassmorphism */
+    .leaflet-container {
+        font-family: var(--font-sans) !important;
+        background: #0c0f12 !important;
+    }
+    .leaflet-bar {
+        border: 1px solid var(--outline) !important;
+        box-shadow: none !important;
+    }
+    .leaflet-bar a {
+        background-color: #101415 !important;
+        color: var(--primary) !important;
+        border-bottom: 1px solid var(--outline) !important;
+    }
+    .leaflet-bar a:hover {
+        background-color: var(--surface-card-hover) !important;
+        color: #fff !important;
+    }
+    /* Scrollbar customization for district grid */
+    #district-grid::-webkit-scrollbar {
+        width: 6px;
+    }
+    #district-grid::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+    }
+    #district-grid::-webkit-scrollbar-thumb {
+        background: var(--outline);
+        border-radius: 3px;
+    }
+    #district-grid::-webkit-scrollbar-thumb:hover {
+        background: var(--primary);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 0 auto;">
-    <h1 style="text-align: center; margin-bottom: 1rem;">Crop Area <span>Occupation Predictor</span></h1>
-    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2.5rem;">
-        Enter the details below. The system will pre-process your inputs, feed them into our best-performing pre-trained ML model, and predict the occupied land area.
+<div style="margin-bottom: 2rem; text-align: center;">
+    <h1 style="margin-bottom: 0.5rem;">Crop Area <span>Occupation Predictor</span></h1>
+    <p style="color: var(--text-secondary); max-width: 700px; margin: 0 auto;">
+        Use the interactive map or form controls to select your target location and predict land occupation using our trained AI models.
     </p>
+</div>
 
-    <div class="glass-panel">
+<div class="grid-2" style="max-width: 1200px; margin: 0 auto; align-items: start;">
+    <!-- Left Column: Interactive Map Explorer -->
+    <div class="glass-panel" style="padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;">
+        <h2 style="margin-bottom: 0; border-bottom: 1px solid var(--outline); padding-bottom: 0.5rem; font-size: 1.3rem; color: var(--primary);">
+            🗺️ Geographic Explorer
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: -0.5rem;">
+            Click on any state to view boundaries, zoom in, and pick a district from the panel.
+        </p>
+        
+        <!-- Map Container -->
+        <div id="map" style="height: 400px; border-radius: var(--radius-md); border: 1px solid var(--outline); overflow: hidden;"></div>
+        
+        <!-- District Picker Container -->
+        <div id="district-picker-container" style="display: none; border-top: 1px solid var(--outline); padding-top: 1rem;">
+            <h3 id="selected-state-title" style="font-size: 1.1rem; color: var(--primary); margin-bottom: 0.75rem; font-family: var(--font-mono);">
+                State Districts
+            </h3>
+            <div id="district-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; max-height: 180px; overflow-y: auto; padding: 0.5rem; background: rgba(0, 0, 0, 0.2); border-radius: var(--radius-sm); border: 1px solid var(--outline);">
+                <!-- Districts dynamically populated -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Predict Form -->
+    <div class="glass-panel" style="padding: 2rem;">
         <form action="/predict" method="POST" class="show-spinner-on-submit">
             <h2 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--outline); padding-bottom: 0.5rem; font-size: 1.3rem; color: var(--primary);">
                 Input Parameters
             </h2>
 
             {% if metadata %}
-                <div class="grid-2">
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                     {% for feature in metadata.feature_cols %}
-                        <div class="form-group">
+                        <div class="form-group" style="margin-bottom: 0;">
                             <label for="field-{{ feature }}">{{ feature | replace('_', ' ') }}</label>
                             
                             {% if metadata.feature_choices[feature] %}
@@ -43,14 +133,19 @@
             {% endif %}
 
             <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <a href="/history" class="btn btn-secondary">
-                    🕒 Check Previous Results
+                <a href="/history" class="btn btn-secondary" style="padding: 0.6rem 1.2rem;">
+                    🕒 History
                 </a>
-                <button type="submit" class="btn btn-primary" {% if not metadata %}disabled{% endif %}>
-                    ⚡ Submit Details
+                <button type="submit" class="btn btn-primary" {% if not metadata %}disabled{% endif %} style="padding: 0.6rem 1.5rem;">
+                    ⚡ Predict Area
                 </button>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
 {% endblock %}
