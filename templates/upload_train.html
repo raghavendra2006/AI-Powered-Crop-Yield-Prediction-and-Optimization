@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload & Train — CropAI Admin</title>
+  <meta name="description" content="Upload a crop dataset and train machine learning models for yield prediction."/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <style>
+    #file-name-display { margin-top:0.75rem;font-size:0.85rem;color:var(--primary);font-weight:600; }
+    .metric-pill {
+      display:inline-block;padding:0.25rem 0.6rem;border-radius:50px;
+      font-size:0.8rem;font-weight:600;background:var(--primary-glow);color:var(--primary);
+      margin-right:0.4rem;margin-bottom:0.4rem;
+    }
+    .training-log {
+      background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-md);
+      padding:1rem;font-family:monospace;font-size:0.82rem;color:#00d084;
+      max-height:200px;overflow-y:auto;margin-top:1rem;
+    }
+  </style>
+</head>
+<body>
+<div class="animated-bg"></div>
+
+<nav class="navbar">
+  <a class="navbar-brand" href="{{ url_for('home') }}">
+    <span class="logo-icon">🌾</span> CropAI
+  </a>
+  <div class="navbar-actions">
+    <a href="{{ url_for('admin_page') }}" class="btn btn-secondary" id="nav-admin-page-btn">← Admin Dashboard</a>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" id="nav-logout-btn">Logout</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="page-header fade-in">
+    <h1>🧪 Upload & Train ML Model</h1>
+    <p>Upload your crop dataset and the system will preprocess, visualize, and train 3 ML algorithms automatically.</p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ 'success' if cat == 'success' else 'danger' }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- Upload Form -->
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;margin-bottom:2rem;" class="fade-in">
+    <div class="section-title">📂 Dataset Upload</div>
+    <form method="POST" action="{{ url_for('upload_train') }}" enctype="multipart/form-data" id="upload-train-form">
+      <label class="upload-zone" for="dataset-input" id="upload-zone">
+        <div class="upload-icon">📊</div>
+        <p><strong>Click to browse</strong> or drag & drop your dataset</p>
+        <p style="margin-top:0.4rem;font-size:0.8rem;color:var(--text-muted);">Supported: CSV, Excel (.xlsx/.xls), TXT — Last column must be the target (yield)</p>
+        <input type="file" id="dataset-input" name="dataset" accept=".csv,.xlsx,.xls,.txt"
+               style="display:none;" onchange="showFileName(this)" required/>
+      </label>
+      <div id="file-name-display"></div>
+      <div style="margin-top:1.5rem;display:flex;gap:1rem;">
+        <button type="submit" class="btn btn-primary btn-lg" id="train-btn" onclick="startTraining()">
+          🚀 Upload & Train
+        </button>
+      </div>
+    </form>
+
+    <div style="margin-top:1.5rem;background:var(--bg-input);border-radius:var(--radius-md);padding:1rem;">
+      <div class="section-title" style="margin-bottom:0.5rem;">📋 Expected Dataset Format</div>
+      <p style="font-size:0.85rem;color:var(--text-secondary);">
+        Your CSV/Excel file should have crop features as columns and yield as the <strong style="color:var(--primary);">last column</strong>. Example columns:
+      </p>
+      <div style="margin-top:0.5rem;">
+        <span class="metric-pill">Crop_Type</span>
+        <span class="metric-pill">Season</span>
+        <span class="metric-pill">Soil_Type</span>
+        <span class="metric-pill">Area</span>
+        <span class="metric-pill">Rainfall</span>
+        <span class="metric-pill">Temperature</span>
+        <span class="metric-pill">Humidity</span>
+        <span class="metric-pill">Fertilizer</span>
+        <span class="metric-pill">Pesticide</span>
+        <span class="metric-pill" style="background:rgba(6,182,212,0.15);color:#06b6d4;">→ Yield (target)</span>
+      </div>
+    </div>
+  </div>
+
+  {% if trained %}
+  <!-- Results Section -->
+  <div class="fade-in">
+    <div class="alert alert-success">✅ Training completed! Best model saved as <code>models/crop_model.pkl</code></div>
+
+    <!-- Dataset Info -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;">
+      <div class="stat-card">
+        <div class="stat-label">Raw Rows</div>
+        <div class="stat-value">{{ raw_shape[0] }}</div>
+        <div class="stat-sub">Before cleaning</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Clean Rows</div>
+        <div class="stat-value">{{ clean_shape[0] }}</div>
+        <div class="stat-sub">After preprocessing</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Features</div>
+        <div class="stat-value">{{ feature_cols|length }}</div>
+        <div class="stat-sub">Input columns</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Train / Test</div>
+        <div class="stat-value" style="font-size:1.1rem;">{{ train_size }} / {{ test_size }}</div>
+        <div class="stat-sub">80 / 20 split</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Target Column</div>
+        <div class="stat-value" style="font-size:1rem;word-break:break-all;">{{ target_col }}</div>
+        <div class="stat-sub">Prediction output</div>
+      </div>
+    </div>
+
+    <!-- Feature Columns -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1.5rem;">
+      <div class="section-title" style="margin-bottom:0.5rem;">🏷️ Feature Columns Used</div>
+      {% for col in feature_cols %}
+        <span class="metric-pill">{{ col }}</span>
+      {% endfor %}
+    </div>
+
+    <!-- Model Results -->
+    <div class="section-title">🏆 Model Performance Comparison</div>
+    <div class="model-results" style="margin-bottom:2rem;">
+      {% for r in model_results %}
+      <div class="model-card {% if r.is_best %}best{% endif %}">
+        <div class="model-name">{{ r.name }}</div>
+        <div class="accuracy">{{ r.r2 }}%</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.3rem;">R² Score</div>
+        <div style="margin-top:0.6rem;font-size:0.8rem;color:var(--text-secondary);">
+          RMSE: <strong>{{ r.rmse }}</strong> &nbsp;|&nbsp; MAE: <strong>{{ r.mae }}</strong>
+        </div>
+        {% if r.is_best %}
+        <div class="best-tag">⭐ Best Model — Saved</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Visualizations -->
+    {% if charts %}
+    <div class="section-title">📈 Data Visualizations</div>
+    <div class="viz-grid">
+      {% for title, img in charts %}
+      <div class="viz-card">
+        <img src="data:image/png;base64,{{ img }}" alt="{{ title }}"/>
+        <div class="viz-title">{{ title }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+  </div>
+  {% endif %}
+
+  <div class="page-footer">
+    <a href="{{ url_for('admin_page') }}" class="btn btn-secondary btn-lg" id="back-admin-btn">
+      ← Return to Admin Dashboard
+    </a>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" id="train-logout-btn">
+      🚪 Logout
+    </a>
+  </div>
+</div>
+
+<script>
+function showFileName(input) {
+  const disp = document.getElementById('file-name-display');
+  if (input.files.length > 0) {
+    disp.textContent = '📄 Selected: ' + input.files[0].name + ' (' + (input.files[0].size / 1024).toFixed(1) + ' KB)';
+  }
+}
+
+function startTraining() {
+  const btn = document.getElementById('train-btn');
+  btn.innerHTML = '<span class="loading-spin">⚙️</span> Training... please wait';
+  btn.disabled = true;
+}
+
+// Drag-and-drop
+const zone = document.getElementById('upload-zone');
+if (zone) {
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.background = 'var(--primary-glow)'; });
+  zone.addEventListener('dragleave', () => { zone.style.background = ''; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.style.background = '';
+    const fileInput = document.getElementById('dataset-input');
+    fileInput.files = e.dataTransfer.files;
+    showFileName(fileInput);
+  });
+}
+</script>
+</body>
+</html>
