@@ -103,6 +103,28 @@ python app.py
 ```
 Open your browser and navigate to `http://127.0.0.1:5000`.
 
+---
+
+## 🚀 Deployment on Render
+
+This application is fully pre-configured for one-click deployment on **[Render](https://render.com)**.
+
+### **Steps to Deploy:**
+1. Log in to [Render Dashboard](https://dashboard.render.com/) via GitHub.
+2. Click **New +** $\rightarrow$ **Web Service**.
+3. Connect your repository: `raghavendra2006/AI-Powered-Crop-Yield-Prediction-and-Optimization`.
+4. Configure the service settings:
+   - **Name**: `ai-crop-yield-prediction`
+   - **Environment**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn app:app`
+   - **Instance Type**: `Free`
+5. (Optional) Set Environment Variables:
+   - `SECRET_KEY`: `your_secure_secret_key`
+   - `PYTHON_VERSION`: `3.10.12`
+6. Click **Create Web Service**.
+
+---
 
 ## 🔐 Credentials (Default Admin)
 
