@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crop Input — CropAI</title>
+  <meta name="description" content="Enter your crop and field details to get an AI-powered yield prediction."/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    .section-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.75rem; margin-bottom: 1.5rem;
+    }
+    .range-row { display: flex; align-items: center; gap: 1rem; }
+    .range-row input[type=range] { flex: 1; accent-color: var(--primary); }
+    .range-val {
+      min-width: 60px; background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 0.3rem 0.6rem;
+      font-weight: 700; color: var(--primary); text-align: center; font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+<div class="animated-bg"></div>
+
+<nav class="navbar">
+  <a class="navbar-brand" href="{{ url_for('home') }}">
+    <span class="logo-icon">🌾</span> CropAI
+  </a>
+  <div class="navbar-actions">
+    <span style="color:var(--text-secondary);font-size:0.9rem;">👋 {{ username }}</span>
+    <a href="{{ url_for('previous_results') }}" class="btn btn-secondary" id="nav-prev-results-btn">📋 My Results</a>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" id="nav-logout-btn">Logout</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="page-header fade-in">
+    <h1>🌱 Crop Yield Predictor</h1>
+    <p>Fill in your field details and select your location on the map to get an AI prediction.</p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ 'success' if cat == 'success' else 'danger' }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST" action="{{ url_for('user_page') }}" id="prediction-form">
+
+    <!-- Crop Details -->
+    <div class="section-card fade-in">
+      <div class="section-title">🌿 Crop & Field Details</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="crop_type">Crop Type</label>
+          <select class="form-control" id="crop_type" name="crop_type" required>
+            <option value="">Select crop...</option>
+            <option>Rice</option><option>Wheat</option><option>Maize</option>
+            <option>Sugarcane</option><option>Cotton</option><option>Soybean</option>
+            <option>Groundnut</option><option>Sunflower</option><option>Jowar</option>
+            <option>Bajra</option><option>Ragi</option><option>Barley</option>
+            <option>Potato</option><option>Tomato</option><option>Onion</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="season">Season</label>
+          <select class="form-control" id="season" name="season" required>
+            <option value="">Select season...</option>
+            <option>Kharif</option><option>Rabi</option><option>Zaid</option>
+            <option>Whole Year</option><option>Summer</option><option>Winter</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="soil_type">Soil Type</label>
+          <select class="form-control" id="soil_type" name="soil_type" required>
+            <option value="">Select soil...</option>
+            <option>Alluvial</option><option>Black</option><option>Red</option>
+            <option>Laterite</option><option>Loamy</option><option>Sandy</option>
+            <option>Clay</option><option>Silt</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="area">Area (Hectares)</label>
+          <input type="number" class="form-control" id="area" name="area"
+                 min="0.1" max="10000" step="0.1" placeholder="e.g. 5.0" required/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Environmental Inputs -->
+    <div class="section-card fade-in">
+      <div class="section-title">🌦️ Environmental Conditions</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="rainfall">Rainfall (mm)</label>
+          <div class="range-row">
+            <input type="range" id="rainfall-range" min="0" max="3000" value="800" step="10"
+                   oninput="syncVal('rainfall-range','rainfall','rainfall-disp')"/>
+            <span class="range-val" id="rainfall-disp">800</span>
+          </div>
+          <input type="hidden" id="rainfall" name="rainfall" value="800"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="temperature">Temperature (°C)</label>
+          <div class="range-row">
+            <input type="range" id="temp-range" min="0" max="50" value="25" step="0.5"
+                   oninput="syncVal('temp-range','temperature','temp-disp')"/>
+            <span class="range-val" id="temp-disp">25</span>
+          </div>
+          <input type="hidden" id="temperature" name="temperature" value="25"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="humidity">Humidity (%)</label>
+          <div class="range-row">
+            <input type="range" id="hum-range" min="0" max="100" value="60" step="1"
+                   oninput="syncVal('hum-range','humidity','hum-disp')"/>
+            <span class="range-val" id="hum-disp">60</span>
+          </div>
+          <input type="hidden" id="humidity" name="humidity" value="60"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="fertilizer">Fertilizer (kg/ha)</label>
+          <div class="range-row">
+            <input type="range" id="fert-range" min="0" max="500" value="50" step="1"
+                   oninput="syncVal('fert-range','fertilizer','fert-disp')"/>
+            <span class="range-val" id="fert-disp">50</span>
+          </div>
+          <input type="hidden" id="fertilizer" name="fertilizer" value="50"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pesticide">Pesticide (kg/ha)</label>
+          <div class="range-row">
+            <input type="range" id="pest-range" min="0" max="100" value="1" step="0.1"
+                   oninput="syncVal('pest-range','pesticide','pest-disp')"/>
+            <span class="range-val" id="pest-disp">1</span>
+          </div>
+          <input type="hidden" id="pesticide" name="pesticide" value="1"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div class="section-card fade-in">
+      <div class="section-title">🗺️ Select Farm Location</div>
+      <p class="map-hint">⬇️ Click anywhere on the map to select your farm's location</p>
+      <div id="map" style="margin-top:0.75rem;"></div>
+      <div id="location-label" style="margin-top:0.6rem;">📍 No location selected — click map to choose</div>
+      <input type="hidden" id="latitude"  name="latitude"  value="20.5937"/>
+      <input type="hidden" id="longitude" name="longitude" value="78.9629"/>
+    </div>
+
+    <div style="display:flex;gap:1rem;justify-content:flex-end;">
+      <a href="{{ url_for('previous_results') }}" class="btn btn-secondary btn-lg" id="check-prev-btn">📋 Previous Results</a>
+      <button type="submit" class="btn btn-primary btn-lg" id="predict-submit-btn">
+        🧠 Predict Yield
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script>
+function syncVal(rangeId, hiddenId, dispId) {
+  const val = document.getElementById(rangeId).value;
+  document.getElementById(hiddenId).value = val;
+  document.getElementById(dispId).textContent = val;
+}
+</script>
+</body>
+</html>
