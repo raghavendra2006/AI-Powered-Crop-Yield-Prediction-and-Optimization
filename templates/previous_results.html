@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Results — CropAI</title>
+  <meta name="description" content="View all your previous crop yield predictions in CropAI."/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+<div class="animated-bg"></div>
+
+<nav class="navbar">
+  <a class="navbar-brand" href="{{ url_for('home') }}">
+    <span class="logo-icon">🌾</span> CropAI
+  </a>
+  <div class="navbar-actions">
+    <span style="color:var(--text-secondary);font-size:0.9rem;">👋 {{ username }}</span>
+    <a href="{{ url_for('user_page') }}" class="btn btn-primary" id="nav-user-page-btn">🌱 New Prediction</a>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" id="nav-logout-btn">Logout</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="page-header fade-in">
+    <h1>📋 My Prediction History</h1>
+    <p>All your previous crop yield predictions</p>
+  </div>
+
+  {% if rows %}
+  <!-- Summary stats -->
+  <div class="stat-cards fade-in">
+    <div class="stat-card">
+      <div class="stat-label">Total Predictions</div>
+      <div class="stat-value">{{ rows|length }}</div>
+      <div class="stat-sub">All time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Best Yield</div>
+      <div class="stat-value" style="font-size:1.2rem;">
+        {{ "%.0f"|format(rows|map(attribute=13)|max) }} kg/ha
+      </div>
+      <div class="stat-sub">Highest predicted</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg. Yield</div>
+      <div class="stat-value" style="font-size:1.2rem;">
+        {{ "%.0f"|format(rows|map(attribute=13)|sum / rows|length) }} kg/ha
+      </div>
+      <div class="stat-sub">All predictions</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="table-wrapper fade-in">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Crop</th>
+          <th>Season</th>
+          <th>Soil</th>
+          <th>Area (ha)</th>
+          <th>Rainfall (mm)</th>
+          <th>Temp (°C)</th>
+          <th>Humidity (%)</th>
+          <th>Fertilizer</th>
+          <th>Yield (kg/ha)</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if rows %}
+          {% for r in rows %}
+          <tr>
+            <td style="color:var(--text-muted);">{{ loop.index }}</td>
+            <td><span class="badge badge-green">{{ r[2] }}</span></td>
+            <td>{{ r[3] }}</td>
+            <td>{{ r[4] }}</td>
+            <td>{{ r[5] }}</td>
+            <td>{{ r[6] }}</td>
+            <td>{{ r[7] }}°C</td>
+            <td>{{ r[8] }}%</td>
+            <td>{{ r[9] }} kg</td>
+            <td>
+              <span style="color:var(--primary);font-weight:700;">
+                {{ "%.2f"|format(r[13]) }}
+              </span>
+            </td>
+            <td style="color:var(--text-muted);font-size:0.8rem;">{{ r[15][:10] if r[15] else '—' }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="11" style="text-align:center;color:var(--text-muted);padding:3rem;">
+              🌱 No predictions yet. <a href="{{ url_for('user_page') }}" style="color:var(--primary);">Make your first prediction!</a>
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-footer">
+    <a href="{{ url_for('user_page') }}" class="btn btn-primary btn-lg" id="go-user-page-btn">
+      🌱 Go to Prediction
+    </a>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" id="prev-logout-btn">
+      🚪 Logout
+    </a>
+  </div>
+</div>
+</body>
+</html>
