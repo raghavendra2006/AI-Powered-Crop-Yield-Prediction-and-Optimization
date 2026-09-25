@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login — CropAI</title>
+  <meta name="description" content="Admin portal for CropAI — manage datasets, train models, and monitor users."/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+<div class="animated-bg"></div>
+
+<nav class="navbar">
+  <a class="navbar-brand" href="{{ url_for('home') }}">
+    <span class="logo-icon">🌾</span> CropAI
+  </a>
+</nav>
+
+<div class="page-center">
+  <div class="auth-card fade-in">
+    <div class="auth-card-header">
+      <div class="icon">🔑</div>
+      <h1>Admin Portal</h1>
+      <p>Restricted access — authorized personnel only</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ 'success' if cat == 'success' else 'danger' }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('signin_admin') }}" id="admin-signin-form">
+      <div class="form-group">
+        <label class="form-label" for="username">Admin Username</label>
+        <div class="input-wrapper">
+          <span class="input-icon">👤</span>
+          <input type="text" class="form-control" id="username" name="username"
+                 placeholder="admin" required autocomplete="username"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Admin Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input type="password" class="form-control" id="password" name="password"
+                 placeholder="••••••••" required autocomplete="current-password"/>
+          <button type="button" class="toggle-pw" onclick="togglePw()" id="pw-eye">👁️</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-purple btn-full btn-lg" id="admin-submit-btn">
+        🔑 Admin Sign In
+      </button>
+    </form>
+
+    <div class="auth-divider">not admin?</div>
+
+    <a href="{{ url_for('signin_user') }}" class="btn btn-secondary btn-full" id="goto-user-btn">
+      🌿 User Sign In
+    </a>
+  </div>
+</div>
+
+<script>
+function togglePw() {
+  const input = document.getElementById('password');
+  const eye   = document.getElementById('pw-eye');
+  input.type  = input.type === 'password' ? 'text' : 'password';
+  eye.textContent = input.type === 'password' ? '👁️' : '🙈';
+}
+</script>
+</body>
+</html>
