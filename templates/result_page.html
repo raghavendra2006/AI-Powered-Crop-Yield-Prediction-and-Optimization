@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prediction Result — CropAI</title>
+  <meta name="description" content="Your AI-powered crop yield prediction result with farming suggestions."/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+<div class="animated-bg"></div>
+
+<nav class="navbar">
+  <a class="navbar-brand" href="{{ url_for('home') }}">
+    <span class="logo-icon">🌾</span> CropAI
+  </a>
+  <div class="navbar-actions">
+    <span style="color:var(--text-secondary);font-size:0.9rem;">👋 {{ username }}</span>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" id="nav-logout-btn">Logout</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="page-header fade-in">
+    <h1>🎯 Prediction Result</h1>
+    <p>AI-powered yield estimate based on your farm conditions</p>
+  </div>
+
+  <!-- Yield Hero -->
+  <div class="result-hero fade-in">
+    <span style="font-size:3.5rem;display:block;margin-bottom:0.5rem;">🌾</span>
+    <span class="yield-value">{{ "%.2f"|format(result.predicted_yield) }} kg/ha</span>
+    <p class="yield-label">Estimated Crop Yield per Hectare</p>
+    <p style="margin-top:0.75rem;font-size:0.85rem;color:var(--text-muted);">
+      Total Estimated: <strong style="color:var(--accent);">
+        {{ "%.2f"|format(result.predicted_yield * result.area) }} kg
+      </strong> for {{ result.area }} ha
+    </p>
+  </div>
+
+  <!-- Input Summary -->
+  <div class="section-title">📊 Input Summary</div>
+  <div class="result-details fade-in" style="margin-bottom:2rem;">
+    <div class="result-detail-item">
+      <div class="label">Crop Type</div>
+      <div class="value">{{ result.crop_type }}</div>
+    </div>
+    <div class="result-detail-item">
+      <div class="label">Season</div>
+      <div class="value">{{ result.season }}</div>
+    </div>
+    <div class="result-detail-item">
+      <div class="label">Soil Type</div>
+      <div class="value">{{ result.soil_type }}</div>
+    </div>
+    <div class="result-detail-item">
+      <div class="label">Area</div>
+      <div class="value">{{ result.area }} ha</div>
+    </div>
+    <div class="result-detail-item">
+      <div class="label">Rainfall</div>
+      <div class="value">{{ result.rainfall }} mm</div>
+    </div>
+    <div class="result-detail-item">
+      <div class="label">Temperature</div>
+      <div class="value">{{ result.temperature }}°C</div>
+    </div>
+    <div class="result-detail-item">
+      <div class="label">Humidity</div>
+      <div class="value">{{ result.humidity }}%</div>
+    </div>
+    <div class="result-detail-item">
+      <div class="label">Fertilizer</div>
+      <div class="value">{{ result.fertilizer }} kg</div>
+    </div>
+    <div class="result-detail-item">
+      <div class="label">Pesticide</div>
+      <div class="value">{{ result.pesticide }} kg</div>
+    </div>
+    <div class="result-detail-item">
+      <div class="label">Latitude</div>
+      <div class="value">{{ "%.4f"|format(result.latitude) }}°N</div>
+    </div>
+    <div class="result-detail-item">
+      <div class="label">Longitude</div>
+      <div class="value">{{ "%.4f"|format(result.longitude) }}°E</div>
+    </div>
+  </div>
+
+  <!-- Suggestions -->
+  {% if result.suggestions %}
+  <div class="suggestion-box fade-in">
+    <h3>💡 Smart Farming Suggestions</h3>
+    <ul>
+      {% for tip in result.suggestions %}
+        <li>{{ tip }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- Yield Category -->
+  <div style="margin-top:1.5rem;" class="fade-in">
+    {% if result.predicted_yield >= 3000 %}
+      <div class="alert alert-success">🌟 <strong>Excellent Yield!</strong> Your predicted output is above average. Keep up the great work!</div>
+    {% elif result.predicted_yield >= 1500 %}
+      <div class="alert alert-info">✅ <strong>Good Yield.</strong> Your output is within the expected range. Minor optimizations can boost it further.</div>
+    {% else %}
+      <div class="alert alert-danger">⚠️ <strong>Low Yield Predicted.</strong> Consider the suggestions above to improve your harvest output.</div>
+    {% endif %}
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="page-footer">
+    <a href="{{ url_for('previous_results') }}" class="btn btn-secondary btn-lg" id="check-prev-results-btn">
+      📋 Check Previous Results
+    </a>
+    <a href="{{ url_for('user_page') }}" class="btn btn-primary btn-lg" id="new-prediction-btn">
+      🔄 New Prediction
+    </a>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" id="result-logout-btn">
+      🚪 Logout
+    </a>
+  </div>
+</div>
+</body>
+</html>
