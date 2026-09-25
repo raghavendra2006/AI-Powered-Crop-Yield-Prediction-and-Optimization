@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard — CropAI</title>
+  <meta name="description" content="CropAI admin dashboard — manage datasets, train models, view results and users."/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+<div class="animated-bg"></div>
+
+<nav class="navbar">
+  <a class="navbar-brand" href="{{ url_for('home') }}">
+    <span class="logo-icon">🌾</span> CropAI
+  </a>
+  <div class="navbar-actions">
+    <span class="badge badge-purple" style="font-size:0.8rem;padding:0.3rem 0.75rem;">🔑 Admin</span>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" id="admin-logout-btn">Logout</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="page-header fade-in">
+    <h1>🛡️ Admin Dashboard</h1>
+    <p>Manage the CropAI platform — train models, monitor users, review predictions</p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ 'success' if cat == 'success' else 'danger' }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="admin-cards fade-in">
+    <a href="{{ url_for('upload_train') }}" class="admin-card" id="admin-upload-train-btn">
+      <div class="card-icon">🧪</div>
+      <h3>Upload & Train Model</h3>
+      <p>Upload a dataset, preprocess data, run 3 ML algorithms, and save the best model.</p>
+      <div style="margin-top:1rem;">
+        <span class="btn btn-primary" style="pointer-events:none;">Open →</span>
+      </div>
+    </a>
+
+    <a href="{{ url_for('admin_results') }}" class="admin-card" id="admin-see-results-btn">
+      <div class="card-icon">📊</div>
+      <h3>See All Predictions</h3>
+      <p>View every crop yield prediction made by all users across the platform.</p>
+      <div style="margin-top:1rem;">
+        <span class="btn btn-secondary" style="pointer-events:none;">Open →</span>
+      </div>
+    </a>
+
+    <a href="{{ url_for('admin_users') }}" class="admin-card" id="admin-see-users-btn">
+      <div class="card-icon">👥</div>
+      <h3>User Sign-Up Details</h3>
+      <p>Browse all registered user profiles, contact information, and sign-up dates.</p>
+      <div style="margin-top:1rem;">
+        <span class="btn btn-purple" style="pointer-events:none;">Open →</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Quick Info -->
+  <div style="margin-top:3rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;" class="fade-in">
+    <div class="section-title">ℹ️ Admin Guide</div>
+    <ol style="color:var(--text-secondary);font-size:0.9rem;padding-left:1.2rem;line-height:2;">
+      <li><strong style="color:var(--primary);">Upload & Train</strong> — First upload a crop dataset (CSV/Excel). The system will preprocess, visualize, and train 3 models automatically.</li>
+      <li><strong style="color:var(--primary);">Model File</strong> — The best model is saved as <code style="color:var(--accent);">models/crop_model.pkl</code>. Users can then get predictions.</li>
+      <li><strong style="color:var(--primary);">Monitor</strong> — Use "See All Predictions" and "User Details" to monitor platform activity.</li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>
