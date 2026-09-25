@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CropAI — AI-Powered Crop Yield Prediction</title>
+  <meta name="description" content="Predict and optimize your crop yield using advanced AI and machine learning. Enter your farm details and get instant predictions."/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+<div class="animated-bg"></div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="navbar-brand" href="{{ url_for('home') }}">
+    <span class="logo-icon">🌾</span> CropAI
+  </a>
+  <div class="navbar-actions">
+    <a href="{{ url_for('signup') }}" class="btn btn-secondary" id="nav-signup-btn">Sign Up</a>
+    <a href="{{ url_for('signin_user') }}" class="btn btn-primary" id="nav-user-signin-btn">User Login</a>
+    <a href="{{ url_for('signin_admin') }}" class="btn btn-purple" id="nav-admin-signin-btn">Admin</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span>🤖</span> Powered by Machine Learning
+    </div>
+    <h1>
+      AI-Powered<br>
+      <span class="gradient-text">Crop Yield</span><br>
+      Prediction
+    </h1>
+    <p>
+      Leverage cutting-edge machine learning to predict crop yields,
+      optimize farming decisions, and maximize agricultural productivity
+      with real-time insights.
+    </p>
+    <div class="hero-buttons">
+      <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg" id="hero-signup-btn">
+        🚀 Get Started — Sign Up
+      </a>
+      <a href="{{ url_for('signin_user') }}" class="btn btn-secondary btn-lg" id="hero-user-btn">
+        🌿 User Login
+      </a>
+      <a href="{{ url_for('signin_admin') }}" class="btn btn-purple btn-lg" id="hero-admin-btn">
+        🔑 Admin Login
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Feature Cards -->
+<div class="features-grid">
+  <div class="feature-card">
+    <div class="icon">🗺️</div>
+    <h3>Map-Based Location</h3>
+    <p>Select your farm location directly on an interactive map for hyper-local predictions.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">🧠</div>
+    <h3>3 ML Algorithms</h3>
+    <p>Random Forest, Gradient Boosting & Linear Regression — best model auto-selected.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">📊</div>
+    <h3>Rich Analytics</h3>
+    <p>6 detailed visualizations including correlation heatmaps and scatter matrices.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">💡</div>
+    <h3>Smart Suggestions</h3>
+    <p>Get tailored farming recommendations based on your specific crop and conditions.</p>
+  </div>
+</div>
+
+<div style="height:4rem;"></div>
+
+<script>
+  // Stagger feature card animations
+  document.querySelectorAll('.feature-card').forEach((card, i) => {
+    card.style.animationDelay = `${0.1 * i}s`;
+  });
+</script>
+</body>
+</html>
