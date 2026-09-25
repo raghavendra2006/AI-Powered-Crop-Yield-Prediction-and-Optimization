@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>All Predictions — CropAI Admin</title>
+  <meta name="description" content="Admin view of all crop yield predictions made on the platform."/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+<div class="animated-bg"></div>
+
+<nav class="navbar">
+  <a class="navbar-brand" href="{{ url_for('home') }}">
+    <span class="logo-icon">🌾</span> CropAI
+  </a>
+  <div class="navbar-actions">
+    <a href="{{ url_for('admin_page') }}" class="btn btn-secondary" id="nav-admin-page-btn">← Dashboard</a>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" id="nav-logout-btn">Logout</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="page-header fade-in">
+    <h1>📊 All Prediction Results</h1>
+    <p>Every yield prediction made by all users on the platform</p>
+  </div>
+
+  {% if rows %}
+  <div class="stat-cards fade-in">
+    <div class="stat-card">
+      <div class="stat-label">Total Predictions</div>
+      <div class="stat-value">{{ rows|length }}</div>
+      <div class="stat-sub">Platform-wide</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Highest Yield</div>
+      <div class="stat-value" style="font-size:1.1rem;">
+        {{ "%.0f"|format(rows|map(attribute=13)|max) }} kg/ha
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg. Yield</div>
+      <div class="stat-value" style="font-size:1.1rem;">
+        {{ "%.0f"|format(rows|map(attribute=13)|sum / rows|length) }} kg/ha
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="table-wrapper fade-in">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User</th>
+          <th>Crop</th>
+          <th>Season</th>
+          <th>Soil</th>
+          <th>Area (ha)</th>
+          <th>Rainfall</th>
+          <th>Temp (°C)</th>
+          <th>Humidity</th>
+          <th>Fertilizer</th>
+          <th>Yield (kg/ha)</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if rows %}
+          {% for r in rows %}
+          <tr>
+            <td style="color:var(--text-muted);">{{ loop.index }}</td>
+            <td><span class="badge badge-blue">{{ r[1] }}</span></td>
+            <td><span class="badge badge-green">{{ r[2] }}</span></td>
+            <td>{{ r[3] }}</td>
+            <td>{{ r[4] }}</td>
+            <td>{{ r[5] }}</td>
+            <td>{{ r[6] }} mm</td>
+            <td>{{ r[7] }}°C</td>
+            <td>{{ r[8] }}%</td>
+            <td>{{ r[9] }} kg</td>
+            <td><strong style="color:var(--primary);">{{ "%.2f"|format(r[13]) }}</strong></td>
+            <td style="color:var(--text-muted);font-size:0.8rem;">{{ r[15][:10] if r[15] else '—' }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="12" style="text-align:center;color:var(--text-muted);padding:3rem;">
+              No predictions yet. Users need to make predictions first.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-footer">
+    <a href="{{ url_for('admin_page') }}" class="btn btn-secondary btn-lg" id="back-admin-btn">
+      ← Admin Dashboard
+    </a>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" id="results-logout-btn">
+      🚪 Logout
+    </a>
+  </div>
+</div>
+</body>
+</html>
