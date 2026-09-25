@@ -34,7 +34,7 @@ warnings.filterwarnings('ignore')
 
 # ── App Config ──────────────────────────────────────────────
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'crop_yield_secret_key_2024')
+app.secret_key = 'crop_yield_secret_key_2024'
 
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -569,6 +569,6 @@ def logout():
         return redirect(url_for('signin_admin'))
     return redirect(url_for('signin_user'))
 
+# ── Run ──────────────────────────────────────────────────────
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True, port=5000)
